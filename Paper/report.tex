@@ -1,0 +1,68 @@
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+\usepackage{cvpr}
+\usepackage{times}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% Include other packages here, before hyperref.
+
+% If you comment hyperref and then uncomment it, you should delete
+% egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
+% run, let it finish, and you should be clear).
+%\usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
+
+\cvprfinalcopy % *** Uncomment this line for the final submission
+
+\def\cvprPaperID{****} % *** Enter the CVPR Paper ID here
+\def\httilde{\mbox{\tt\raisebox{-.5ex}{\symbol{126}}}}
+
+% Pages are numbered in submission mode, and unnumbered in camera-ready
+%\ifcvprfinal\pagestyle{empty}\fi
+\setcounter{page}{1}
+\begin{document}
+
+%%%%%%%%% TITLE
+\title{Autonomously Classifying Marine Life}
+
+\author{Steven Hickson, Andrew Price \\
+Georgia Institute of Technology\\
+{\tt\small me@stevenhickson.com, arprice@gatech.edu}
+}
+
+\maketitle
+%\thispagestyle{empty}
+
+
+%%%%%%%%% BODY TEXT
+\section{Introduction}
+ Classification of elements in images has been a major topic in computer vision for a long time, due to its high degree of both difficulty and utility.
+ One such application of object classification has been automated recognition of marine species.
+ The ability to automatically identify species in an image would prove highly useful to both academic pursuits (eg. species surveying for a coral reef) and educational audiences (eg. a guided aquarium tour program).
+
+\section{Related Work}
+ Much work on classifying fish species has been done in highly controlled environments, usually requiring a carefully selected background and fish orientation \cite{white2006automated}.
+ These approaches often require additional specialized equipment such as laser scanners or conveyor belts \cite{storbeck2001fish}, or require species dependent domain knowledge \cite{thonnat1988expert}.
+  Instead, we intend to implement something more along the lines presented in \cite{berg2006animals}, which leverages a variety of features to perform a more general classification.
+  However, we will not rely on text pulled from internet images for the classifier.
+
+\section{Implementation}
+We plan to use different types of feature detection that focus on shape, color, and texture in order to accurately classify marine life from a known data set.
+We will compare and combine multiple feature detectors. These will include SURF \cite{bay2006surf} and ORB \cite{rublee2011orb} for texture, HoGs \cite{dalal2005histograms} for shape, and colored histogram similarity \cite{stricker1995similarity} for color. We will use a mixture of experts approach to create a SVM feature classifier with a higher level of object understanding. We will then compare a unified feature vector against a mixture of experts approach. Our system will have a priori knowledge of the environment and the different species classified. We can then find the best option for a classification system. We think that a combination of these features makes sense because marine life is so diverse. Some fish have a similar shape but vary in color or texture and vice versa. We hope that this unified feature vector will allow us to improve accuracy.
+
+\section{Evaluation}
+We plan to evaluate the classifier performance by generating a confusion matrix based on images drawn from a large subset of the species living at the Atlanta Aquarium. 
+Additionally, we will compare the performance of the aggregated features against classifiers based on the individual features.
+Finally, we will be comparing against \cite{berg2006animals} to determine the degree of dependency on text information.
+We expect the concatenated features to outperform in situations where marine life shares a similar environment, and therefore shares similar color or shape characteristics.
+
+%-------------------------------------------------------------------------
+
+{\small
+\bibliographystyle{ieee}
+\bibliography{egbib}
+}
+
+\end{document}

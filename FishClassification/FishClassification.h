@@ -29,6 +29,7 @@ class categorizer {
         Ptr<BOWKMeansTrainer> bowtrainer;
         Ptr<BOWImgDescriptorExtractor> bowDescriptorExtractor;
         Ptr<DescriptorMatcher> descriptorMatcher;
+		//Ptr<HOGDescriptor> hogDescriptor;
 
         void make_train_set(); //function to build the training set multimap
         void make_pos_neg(); //function to extract BOW features from training images and organize them into positive and negative samples 
@@ -36,7 +37,10 @@ class categorizer {
     public:
         categorizer(string direc, int _clusters); //constructor
         void build_vocab(); //function to build the BOW vocabulary
+		void load_vocab(); //function to load the BOW vocabulary and classifiers
         void train_classifiers(); //function to train the one-vs-all SVM classifiers for all categories
         void categorize(VideoCapture); //function to perform real-time object categorization on camera frames
         void categorize(); //function to perform real-time object categorization on saved frames
 };
+
+#define THRESH 0.9980f

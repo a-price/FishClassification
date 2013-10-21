@@ -36,8 +36,12 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 			// Number of clusters for building BOW vocabulary from SURF features
 			int clusters = 1000;    
 			categorizer c(argv[1], clusters);
-			c.build_vocab();
-			c.train_classifiers();
+			if(atoi(argv[2]) == 0) {
+				c.build_vocab();
+				c.train_classifiers();
+			} else {
+				c.load_vocab();
+			}
 
 			//VideoCapture cap(0);
 			namedWindow("Detected object");
@@ -45,6 +49,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 			} catch(cv::Exception &e) {
 				printf("Error: %s\n", e.what());
 			}
+			cin.get();
 		}
 	}
 	else
@@ -68,9 +73,11 @@ categorizer::categorizer(string direc, int _clusters) {
 	// Initialize pointers to all the feature detectors and descriptor extractors
 	featureDetector = (new SurfFeatureDetector());
 	descriptorExtractor = (new SurfDescriptorExtractor());
+	//hogDescriptor = (new HOGDescriptor());
 	bowtrainer = (new BOWKMeansTrainer(clusters));
 	descriptorMatcher = (new FlannBasedMatcher());
 	bowDescriptorExtractor = (new BOWImgDescriptorExtractor(descriptorExtractor, descriptorMatcher));
+	
 
 	//set up folders
 	template_folder = direc + "templates\\";
@@ -103,13 +110,17 @@ void categorizer::make_train_set() {
 		// Level 0 means a folder, since there are only folders in TRAIN_FOLDER at the zeroth level
 		if(i.level() == 0) {
 			// Get category name from name of the folder
-			category = (i -> path()).filename().string();
+			category = (i->path()).filename().string();
 			category_names.push_back(category);
 		}
 		// Level 1 means a training image, map that by the current category
 		else {
 			// File name with path
-			string filename = string(train_folder) + category + string("/") + (i -> path()).filename().string();
+			string filename = string(train_folder) + category + string("/") + (i->path()).filename().string();
+			//load and downsize the image
+			//Mat tmp = imread(filename, CV_LOAD_IMAGE_GRAYSCALE);
+			//Mat downsized;
+			//pyrDown(tmp,downsized,Size(tmp.cols / 2, tmp.rows /2));
 			// Make a pair of string and Mat to insert into multimap
 			pair<string, Mat> p(category, imread(filename, CV_LOAD_IMAGE_GRAYSCALE));
 			train_set.insert(p);
@@ -130,8 +141,9 @@ void categorizer::make_pos_neg() {
 
 		// Detect keypoints, get the image BOW descriptor
 		vector<KeyPoint> kp;
-		featureDetector -> detect(im, kp);
-		bowDescriptorExtractor -> compute(im, kp, feat);
+		featureDetector->detect(im, kp);
+		
+		bowDescriptorExtractor->compute(im, kp, feat);
 
 		// Mats to hold the positive and negative training data for current category
 		Mat pos, neg;
@@ -170,7 +182,7 @@ void categorizer::build_vocab() {
 	}
 
 	// Add the descriptors to the BOW trainer to cluster
-	bowtrainer -> add(vocab_descriptors);
+	bowtrainer->add(vocab_descriptors);
 	// cluster the SURF descriptors
 	vocab = bowtrainer->cluster();
 
@@ -182,9 +194,26 @@ void categorizer::build_vocab() {
 	cout << "Built vocabulary" << endl;
 } 
 
+void categorizer::load_vocab() {
+	//load the vocabulary
+	FileStorage fs(vocab_folder + "vocab.xml", FileStorage::READ);
+	fs["vocabulary"] >> vocab;
+	fs.release();
+
+	// Set the vocabulary for the BOW descriptor extractor
+	bowDescriptorExtractor->setVocabulary(vocab);
+
+	//load the classifiers
+	for(int i = 0; i < categories; i++) {
+		string category = category_names[i];
+		string svm_filename = string(vocab_folder) + category + string("SVM.xml");
+		svms[category].load(svm_filename.c_str());
+	}
+}
+
 void categorizer::train_classifiers() {
 	// Set the vocabulary for the BOW descriptor extractor
-	bowDescriptorExtractor -> setVocabulary(vocab);
+	bowDescriptorExtractor->setVocabulary(vocab);
 	// Extract BOW descriptors for all training images and organize them into positive and negative samples for each category
 	make_pos_neg();
 
@@ -224,8 +253,8 @@ void categorizer::categorize(VideoCapture cap) {
 		// Extract frame BOW descriptor
 		vector<KeyPoint> kp;
 		Mat test;
-		featureDetector -> detect(frame_g, kp);
-		bowDescriptorExtractor -> compute(frame_g, kp, test);
+		featureDetector->detect(frame_g, kp);
+		bowDescriptorExtractor->compute(frame_g, kp, test);
 
 		// Predict using SVMs for all catgories, choose the prediction with the most negative signed distance measure
 		float best_score = 777;
@@ -251,18 +280,21 @@ void categorizer::categorize() {
 	namedWindow("Image");
 
 	for(directory_iterator i(test_folder), end_iter; i != end_iter; i++) {
-		Mat frame, frame_g;
+		Mat frame, frame_small, frame_g;
 		// Prepend full path to the file name so we can imread() it
 		string filename = string(test_folder) + i->path().filename().string();
 		cout << "Opening file: " << filename << endl;
 		frame = imread(filename);
-		cvtColor(frame, frame_g, CV_BGR2GRAY);
-		imshow("Image", frame);
+		//should downsize for speed but need to improve results
+		resize(frame, frame_small, Size(), 0.25f, 0.25f);
+		//pyrDown(frame, frame_small, Size(frame.cols / 2, frame.rows / 2));
+		cvtColor(frame_small, frame_g, CV_BGR2GRAY);
+		imshow("Image", frame_small);
 		// Extract frame BOW descriptor
 		vector<KeyPoint> kp;
 		Mat test;
-		featureDetector -> detect(frame_g, kp);
-		bowDescriptorExtractor -> compute(frame_g, kp, test);
+		featureDetector->detect(frame_g, kp);
+		bowDescriptorExtractor->compute(frame_g, kp, test);
 
 		// Predict using SVMs for all catgories, choose the prediction with the most negative signed distance measure
 		float best_score = 777;
@@ -270,16 +302,19 @@ void categorizer::categorize() {
 		for(int i = 0; i < categories; i++) {
 			string category = category_names[i];
 			float prediction = svms[category].predict(test, true);
-			//cout << category << " " << prediction << " ";
-			if(prediction < best_score) {
+			cout << category << " " << prediction << " ";
+			if(prediction < best_score && prediction < THRESH) {
 				best_score = prediction;
 				predicted_category = category;
 			}
 		}
-		//cout << endl;
+		cout << endl;
 
 		// Pull up the object template for the detected category and show it in a separate window
-		imshow("Detected object", objects[predicted_category]);
+		if(predicted_category.empty())
+			cout << "Couldn't find a match!\n" << endl;
+		else
+			imshow("Detected object", objects[predicted_category]);
 		waitKey();
 	}
 }

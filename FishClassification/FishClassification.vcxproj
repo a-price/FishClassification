@@ -107,7 +107,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\opencv\build\x64\vc11\lib\;C:\blepo\external64\boost\lib\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_contrib246d.lib;opencv_core246d.lib;opencv_features2d246d.lib;opencv_flann246d.lib;opencv_highgui246d.lib;opencv_ml246d.lib;opencv_imgproc246d.lib;opencv_nonfree246d.lib</AdditionalDependencies>
+      <AdditionalDependencies>opencv_contrib246d.lib;opencv_core246d.lib;opencv_features2d246d.lib;opencv_flann246d.lib;opencv_highgui246d.lib;opencv_ml246d.lib;opencv_imgproc246d.lib;opencv_nonfree246d.lib;opencv_objdetect246d.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -144,7 +144,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>C:\opencv\build\x64\vc11\lib\;C:\blepo\external64\boost\lib\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_contrib246.lib;opencv_core246.lib;opencv_features2d246.lib;opencv_flann246.lib;opencv_highgui246.lib;opencv_ml246.lib;opencv_imgproc246.lib;opencv_nonfree246.lib</AdditionalDependencies>
+      <AdditionalDependencies>opencv_contrib246.lib;opencv_core246.lib;opencv_features2d246.lib;opencv_flann246.lib;opencv_highgui246.lib;opencv_ml246.lib;opencv_imgproc246.lib;opencv_nonfree246.lib;opencv_objdetect246.lib</AdditionalDependencies>
       <StackReserveSize>1000000000</StackReserveSize>
     </Link>
   </ItemDefinitionGroup>

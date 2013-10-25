@@ -1,8 +1,10 @@
 // FishClassification.cpp : Defines the entry point for the console application.
 //
 
+
 #include "stdafx.h"
 #include "FishClassification.h"
+#include <string>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -33,10 +35,19 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		else
 		{
 			try {
+#ifndef UNICODE
+				std::string catDirectory(argv[1]);
+				std::string catMode(argv[2]);
+#else
+				std::wstring wcatDirectory(argv[1]);
+				std::wstring wcatMode(argv[2]);
+				std::string catDirectory(wcatDirectory.begin(), wcatDirectory.end());
+				std::string catMode(wcatMode.begin(), wcatMode.end());
+#endif
 				// Number of clusters for building BOW vocabulary from SURF features
 				int clusters = 1000;    
-				categorizer c(argv[1], clusters);
-				if(atoi(argv[2]) == 0) {
+				categorizer c(catDirectory, clusters);
+				if(atoi(catMode.c_str()) == 0) {
 					c.build_vocab();
 					c.train_classifiers();
 				} else {

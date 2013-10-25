@@ -20,7 +20,7 @@ using namespace std;
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
 	int nRetCode = 0;
-
+	
 	HMODULE hModule = ::GetModuleHandle(NULL);
 
 	if (hModule != NULL)
@@ -30,6 +30,11 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		{
 			// TODO: change error code to suit your needs
 			_tprintf(_T("Fatal Error: MFC initialization failed\n"));
+			nRetCode = 1;
+		}
+		if (argc != 3)
+		{
+			std::cout << "Expects 2 input arguments." << std::endl;
 			nRetCode = 1;
 		}
 		else
@@ -133,6 +138,8 @@ categorizer::categorizer(string direc, int _clusters) {
 		string filename = string(template_folder) + i->path().filename().string();
 		// Get category name by removing extension from name of file
 		string category = remove_extension(i->path().filename().string());
+		if (category == "Thumbs") { continue; }
+		std::cerr << "Loading category: " << category << std::endl;
 		Mat im = imread(filename, CV_LOAD_IMAGE_COLOR), templ_im;
 		objects[category] = im;
 		cvtColor(im, templ_im, CV_BGR2GRAY);
@@ -174,9 +181,12 @@ void categorizer::make_train_set() {
 
 void categorizer::make_pos_neg() {
 	// Iterate through the whole training set of images
+	int count = 1;
+	int size = train_set.size();
 	for(multimap<string, Mat>::iterator i = train_set.begin(); i != train_set.end(); i++) {
 		// Category name is the first element of each entry in train_set
 		string category = i->first;
+		std::cout << "Creating +/- for '" << category << "' (" << count++ << " of " << size << ")" << std::endl;
 		// Training image is the second elemnt
 		Mat im = i->second, feat, im_g, im_hsv, hist;
 		cvtColor(im,im_g,CV_BGR2GRAY);
@@ -222,7 +232,11 @@ void categorizer::build_vocab() {
 	Mat vocab_descriptors;
 	// For each template, extract SURF descriptors and pool them into vocab_descriptors
 	Mat templ, desc;
+	cout << "Building SURF Descriptors..." << endl;
+	int count = 1;
+	int size = templates.size();
 	for(map<string, Mat>::iterator i = templates.begin(); i != templates.end(); i++) {
+		std::cout << count++ << " of " << size << std::endl;
 		vector<KeyPoint> kp;
 		templ = i->second;
 		featureDetector->detect(templ, kp);
@@ -231,6 +245,7 @@ void categorizer::build_vocab() {
 		//templ.release();
 		//desc.release();
 	}
+	cout << "Done." << endl;
 
 	// Add the descriptors to the BOW trainer to cluster
 	bowtrainer->add(vocab_descriptors);
@@ -274,6 +289,7 @@ void categorizer::train_classifiers() {
 
 	for(int i = 0; i < categories; i++) {
 		string category = category_names[i];
+		std::cout << "Training SVM for '" << category << "'" << std::endl;
 
 		// Postive training data has labels 1
 		Mat train_data_surf = positive_surf[category], train_labels_surf = Mat::ones(train_data_surf.rows, 1, CV_32S);

@@ -72,15 +72,24 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\OpenLibraries\opencv\build\include;C:\Program Files\Boost\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\OpenLibraries\opencv\build\x86\vc11\lib;C:\Program Files\Boost\lib;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>C:\OpenLibraries\opencv\build\x86\vc11\bin;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <ExecutablePath>C:\OpenLibraries\opencv\build\x64\vc11\bin;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>C:\OpenLibraries\opencv\build\include;C:\Program Files\Boost\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\OpenLibraries\opencv\build\x64\vc11\lib;C:\Program Files\Boost\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <ExecutablePath>C:\OpenLibraries\opencv\build\x64\vc11\bin;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>C:\OpenLibraries\opencv\build\include;C:\Program Files\Boost\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\OpenLibraries\opencv\build\x64\vc11\lib;C:\Program Files\Boost\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -92,6 +101,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>opencv_calib3d246.lib;opencv_calib3d246d.lib;opencv_contrib246.lib;opencv_contrib246d.lib;opencv_core246.lib;boost_system-vc110-mt-1_52.lib;boost_system-vc110-mt-gd-1_52.lib;boost_filesystem-vc110-mt-1_52.lib;boost_filesystem-vc110-mt-gd-1_52.lib;opencv_core246d.lib;opencv_features2d246.lib;opencv_features2d246d.lib;opencv_flann246.lib;opencv_flann246d.lib;opencv_gpu246.lib;opencv_gpu246d.lib;opencv_haartraining_engine.lib;opencv_haartraining_engined.lib;opencv_highgui246.lib;opencv_highgui246d.lib;opencv_imgproc246.lib;opencv_imgproc246d.lib;opencv_legacy246.lib;opencv_legacy246d.lib;opencv_ml246.lib;opencv_ml246d.lib;opencv_nonfree246.lib;opencv_nonfree246d.lib;opencv_objdetect246.lib;opencv_objdetect246d.lib;opencv_ocl246.lib;opencv_ocl246d.lib;opencv_photo246.lib;opencv_photo246d.lib;opencv_stitching246.lib;opencv_stitching246d.lib;opencv_superres246.lib;opencv_superres246d.lib;opencv_ts246.lib;opencv_ts246d.lib;opencv_video246.lib;opencv_video246d.lib;opencv_videostab246.lib;opencv_videostab246d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

@@ -163,6 +163,8 @@ void categorizer::make_train_set() {
 		}
 		// Level 1 means a training image, map that by the current category
 		else {
+			if ((i->path()).filename().string() == "Thumbs.db") {continue;}
+			std::cerr << (i->path()).filename().string() << std::endl;
 			// File name with path
 			string filename = string(train_folder) + category + string("/") + (i->path()).filename().string();
 			//load and downsize the image
@@ -248,9 +250,11 @@ void categorizer::build_vocab() {
 	cout << "Done." << endl;
 
 	// Add the descriptors to the BOW trainer to cluster
+	cout << "Training BOW..." << endl;
 	bowtrainer->add(vocab_descriptors);
 	// cluster the SURF descriptors
 	vocab = bowtrainer->cluster();
+	cout << "Done." << endl;
 
 	// Save the vocabulary
 	FileStorage fs(vocab_folder + "vocab.xml", FileStorage::WRITE);
@@ -380,7 +384,7 @@ void categorizer::categorize() {
 		cout << "Opening file: " << filename << endl;
 		frame = imread(filename);
 		//should downsize for speed but need to improve results
-		resize(frame, frame_small, Size(), 0.25f, 0.25f);
+		resize(frame, frame_small, Size(), 0.5f, 0.5f);
 		//pyrDown(frame, frame_small, Size(frame.cols / 2, frame.rows / 2));
 		cvtColor(frame_small, frame_g, CV_BGR2GRAY);
 		/*cvtColor(frame_small, frame_hsv, CV_BGR2HSV);*/
@@ -418,5 +422,6 @@ void categorizer::categorize() {
 		} else
 			imshow("Detected object", objects[predicted_category]);
 		waitKey();
+		std::cerr << "Finished object." << std::endl;
 	}
 }

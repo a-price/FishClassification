@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "FishClassification.h"
 #include <string>
+#include "SVMVisualization.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -90,7 +91,7 @@ inline void ComputeHistogram(Mat &img, HistInfo &histInfo, Mat *hist) {
 	}
 	//for displaying the histogram
 	/*double maxVal=0;
-    minMaxLoc(hist_base, 0, &maxVal, 0, 0);
+	minMaxLoc(hist_base, 0, &maxVal, 0, 0);
 	Mat histImg = Mat::zeros( histInfo.s_bins*10,  histInfo.h_bins*10, CV_8UC3);
 	for( int h = 0; h < histInfo.h_bins; h++ )
 		for( int s = 0; s < histInfo.s_bins; s++ )
@@ -253,6 +254,7 @@ void categorizer::build_vocab() {
 	cout << "Training BOW..." << endl;
 	bowtrainer->add(vocab_descriptors);
 	// cluster the SURF descriptors
+	cout << "Clustering..." << endl;
 	vocab = bowtrainer->cluster();
 	cout << "Done." << endl;
 
@@ -302,6 +304,11 @@ void categorizer::train_classifiers() {
 		Mat m = Mat::zeros(negative_surf[category].rows, 1, CV_32S);
 		train_labels_surf.push_back(m);
 
+		std::cout << train_data_surf.rows << ", " << train_data_surf.cols << std::endl;
+		Mat test = downproject(train_data_surf, true);
+		cv::imshow("test", test);
+		cv::waitKey();
+
 		//Mat train_data_hist = positive_hist[category], train_labels_hist = Mat::ones(train_data_hist.rows, 1, CV_32S);
 		//// Negative training data has labels 0
 		//train_data_hist.push_back(negative_hist[category]);
@@ -315,9 +322,15 @@ void categorizer::train_classifiers() {
 		//train_labels_hog.push_back(m);
 
 		// Train SVM!
-		svms_surf[category].train(train_data_surf, train_labels_surf);
+		SVMParams params;
+		params.svm_type = SVM::C_SVC;
+		params.kernel_type = SVM::LINEAR;
+		params.term_crit = cv::TermCriteria(CV_TERMCRIT_ITER, 100, 1e-6);
+
+		svms_surf[category].train(train_data_surf, train_labels_surf);//, Mat(), Mat(), params);
 		/*svms_hist[category].train(train_data_hist, train_labels_hist);
 		svms_hog[category].train(train_data_hog, train_labels_hog);*/
+		
 
 		// Save SVM to file for possible reuse
 		string svm_filename = string(vocab_folder) + category + string("SVM.xml");
@@ -327,7 +340,8 @@ void categorizer::train_classifiers() {
 		svm_filename = string(vocab_folder) + category + string("SVM3.xml");
 		svms_hog[category].save(svm_filename.c_str());*/
 
-		cout << "Trained and saved SVM for category " << category << endl;
+		cout << "Trained and saved SVM for category '" << category << "':"<< endl;
+		cout << "# Support Vectors: " << svms_surf[category].get_support_vector_count() << endl;
 	}
 	positive_surf.clear();
 	negative_surf.clear();

@@ -12,11 +12,13 @@ using namespace cv;
 using namespace std;
 using namespace boost::filesystem;
 
+Mat VisualizeHoG(Mat& origImg, vector<float>& descriptorValues);
+
 static class HistInfo {
 public:
 	/// Using 30 bins for hue and 32 for saturation
-	static const int h_bins = 40; 
-	static const int s_bins = 25;
+	static const int h_bins = 50; 
+	static const int s_bins = 40;
 	int histSize[2];
 	// hue varies from 0 to 256, saturation from 0 to 180
 	float h_ranges[2];
@@ -38,7 +40,8 @@ public:
 
 class categorizer {
 private:
-	map<string, Mat> templates, objects, positive_surf, negative_surf, positive_hist, negative_hist, positive_hog, negative_hog; //maps from category names to data
+	map<string, Mat> templates, objects, positive_surf, negative_surf, positive_hist, negative_hist, positive_hog, negative_hog, trained_hists; //maps from category names to data
+	map<string, vector<Mat>> hists;
 	multimap<string, Mat> train_set; //training images, mapped by category name
 	map<string, CvSVM> svms_surf, svms_hist, svms_hog; //trained SVMs, mapped by category name
 	vector<string> category_names; //names of the categories found in TRAIN_FOLDER
@@ -68,4 +71,4 @@ public:
 	void categorize(); //function to perform real-time object categorization on saved frames
 };
 
-#define THRESH 0.9970f
+#define THRESH 0.9972f

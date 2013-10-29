@@ -38,6 +38,9 @@
     <ClCompile Include="FishClassification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DisplayHoG.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="FishClassification.rc">

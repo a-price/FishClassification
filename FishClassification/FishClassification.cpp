@@ -51,7 +51,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 				std::string catMode(wcatMode.begin(), wcatMode.end());
 #endif
 				// Number of clusters for building BOW vocabulary from SURF features
-				int clusters = 1000;    
+				int clusters = 100;    
 				categorizer c(catDirectory, clusters);
 				if(atoi(catMode.c_str()) == 0) {
 					c.build_vocab();
@@ -61,7 +61,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 				}
 
 				//VideoCapture cap(0);
-				namedWindow("Detected object");
+				namedWindow("Detected object", CV_NORMAL);
 				c.categorize();
 			} catch(cv::Exception &e) {
 				printf("Error: %s\n", e.what());
@@ -304,11 +304,6 @@ void categorizer::train_classifiers() {
 		Mat m = Mat::zeros(negative_surf[category].rows, 1, CV_32S);
 		train_labels_surf.push_back(m);
 
-		std::cout << train_data_surf.rows << ", " << train_data_surf.cols << std::endl;
-		Mat test = downproject(train_data_surf, true);
-		cv::imshow("test", test);
-		cv::waitKey();
-
 		//Mat train_data_hist = positive_hist[category], train_labels_hist = Mat::ones(train_data_hist.rows, 1, CV_32S);
 		//// Negative training data has labels 0
 		//train_data_hist.push_back(negative_hist[category]);
@@ -340,6 +335,10 @@ void categorizer::train_classifiers() {
 		svm_filename = string(vocab_folder) + category + string("SVM3.xml");
 		svms_hog[category].save(svm_filename.c_str());*/
 
+		Mat test = downproject(svms_surf[category], train_data_surf, train_labels_surf, true);
+		cv::imshow("SVM", test);
+		cv::waitKey();
+
 		cout << "Trained and saved SVM for category '" << category << "':"<< endl;
 		cout << "# Support Vectors: " << svms_surf[category].get_support_vector_count() << endl;
 	}
@@ -353,7 +352,7 @@ void categorizer::train_classifiers() {
 
 void categorizer::categorize(VideoCapture cap) {
 	cout << "Starting to categorize objects" << endl;
-	namedWindow("Image");
+	namedWindow("Image", CV_NORMAL);
 
 	while(char(waitKey(1)) != 'q') {
 		Mat frame, frame_g;
@@ -389,7 +388,9 @@ void categorizer::categorize(VideoCapture cap) {
 
 void categorizer::categorize() {
 	cout << "Starting to categorize objects" << endl;
-	namedWindow("Image");
+	namedWindow("Image", CV_NORMAL);
+
+	int count = 1;
 
 	for(directory_iterator i(test_folder), end_iter; i != end_iter; i++) {
 		Mat frame, frame_small, frame_g, frame_hsv;
@@ -433,8 +434,12 @@ void categorizer::categorize() {
 		if(predicted_category.empty()) {
 			cout << "Couldn't find a match!\n" << endl;
 			imshow("Detected object", NULL);
-		} else
+		} else {
 			imshow("Detected object", objects[predicted_category]);
+			imwrite(std::to_string(count) + "_input.jpg", frame);
+			imwrite(std::to_string(count) + "_output.jpg", objects[predicted_category]);
+			count++;
+		}
 		waitKey();
 		std::cerr << "Finished object." << std::endl;
 	}

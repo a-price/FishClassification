@@ -5,4 +5,15 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/ml/ml.hpp>
 
-cv::Mat downproject(const cv::Mat& data, bool rowVectors = false);
+class mySVM : public cv::SVM
+{
+public:
+	const CvSVMDecisionFunc* getDecisionFunction(const cv::SVM* target) const
+	{
+		return ((mySVM*)target)->decision_func;
+	}
+};
+
+cv::Mat svmHyperplane(const cv::SVM& svm, const int numOfFeatures);
+
+cv::Mat downproject(const cv::SVM& svm, const cv::Mat& data, const cv::Mat& labels, bool rowVectors = false);

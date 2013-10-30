@@ -17,3 +17,5 @@ public:
 cv::Mat svmHyperplane(const cv::SVM& svm, const int numOfFeatures);
 
 cv::Mat downproject(const cv::SVM& svm, const cv::Mat& data, const cv::Mat& labels, bool rowVectors = false);
+
+cv::Mat testSVM();

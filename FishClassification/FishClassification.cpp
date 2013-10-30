@@ -1,7 +1,6 @@
 // FishClassification.cpp : Defines the entry point for the console application.
 //
 
-
 #include "stdafx.h"
 #include "FishClassification.h"
 #include <string>
@@ -21,7 +20,7 @@ using namespace std;
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
 	int nRetCode = 0;
-	
+
 	HMODULE hModule = ::GetModuleHandle(NULL);
 
 	if (hModule != NULL)
@@ -79,34 +78,36 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	return nRetCode;
 }
 
-inline void ComputeHistogram(Mat &img, HistInfo &histInfo, Mat *hist) {
-	Mat hist_base;
-	calcHist( &img, 1, histInfo.channels, Mat(), hist_base, 2, histInfo.histSize, histInfo.ranges, true, false );
-	normalize( hist_base, hist_base, 0, 1, NORM_MINMAX, -1, Mat() );
-	int tmp = hist_base.channels();
-	*hist = Mat(1,hist_base.rows * hist_base.cols,hist_base.type());
-	MatIterator_<float> pI = hist_base.begin<float>(), pO = hist->begin<float>(), pEnd = hist_base.end<float>();
-	while(pI != pEnd) {
-		*pO++ = *pI++;
-	}
+inline void DisplayHistogram(Mat &hist, HistInfo &histInfo, string window) {
 	//for displaying the histogram
-	/*double maxVal=0;
-	minMaxLoc(hist_base, 0, &maxVal, 0, 0);
+	double maxVal=0;
+    minMaxLoc(hist, 0, &maxVal, 0, 0);
 	Mat histImg = Mat::zeros( histInfo.s_bins*10,  histInfo.h_bins*10, CV_8UC3);
 	for( int h = 0; h < histInfo.h_bins; h++ )
 		for( int s = 0; s < histInfo.s_bins; s++ )
 		{
-			float binVal = hist_base.at<float>(h, s);
+			float binVal = hist.at<float>(h, s);
 			int intensity = cvRound(binVal*255/maxVal);
 			rectangle( histImg, Point(h*10, s*10),
 				Point( (h+1)*10 - 1, (s+1)*10 - 1),
 				Scalar::all(intensity),
 				CV_FILLED );
 		}
-		namedWindow( "H-S Histogram", 1 );
-		imshow( "H-S Histogram", histImg );
-		cvWaitKey();
-		*/
+		namedWindow( window, 1 );
+		imshow( window, histImg );
+		//cvWaitKey();
+}
+
+inline void ComputeHistogram(Mat &img, HistInfo &histInfo, Mat *hist) {
+	Mat hist_base;
+	calcHist( &img, 1, histInfo.channels, Mat(), hist_base, 2, histInfo.histSize, histInfo.ranges, true, false );
+	normalize( hist_base, *hist, 0, 1, NORM_MINMAX, -1, Mat() );
+	/*int tmp = hist_base.channels();
+	*hist = Mat(1,hist_base.rows * hist_base.cols,hist_base.type());
+	MatIterator_<float> pI = hist_base.begin<float>(), pO = hist->begin<float>(), pEnd = hist_base.end<float>();
+	while(pI != pEnd) {
+		*pO++ = *pI++;
+	}*/	
 }
 
 string categorizer::remove_extension(string full) {
@@ -123,6 +124,7 @@ categorizer::categorizer(string direc, int _clusters) {
 	hogDescriptor = (new HOGDescriptor());
 	bowtrainer = (new BOWKMeansTrainer(clusters));
 	descriptorMatcher = (new FlannBasedMatcher());
+	//descriptorMatcher = (new BFMatcher());
 	bowDescriptorExtractor = (new BOWImgDescriptorExtractor(descriptorExtractor, descriptorMatcher));
 
 
@@ -182,6 +184,13 @@ void categorizer::make_train_set() {
 	cout << "Discovered " << categories << " categories of objects" << endl;
 }
 
+inline void PrepImgForHog(const Mat &in, Mat &out) {
+	out = in;
+	if(in.cols > in.rows) 
+		transpose(out,out);
+	resize(out,out,Size(64,128));
+}
+
 void categorizer::make_pos_neg() {
 	// Iterate through the whole training set of images
 	int count = 1;
@@ -202,8 +211,14 @@ void categorizer::make_pos_neg() {
 		ComputeHistogram(im_hsv,histInfo,&hist);
 		//compute HoG descriptors
 		vector<float> descriptors;
-		hogDescriptor->compute(im_g, descriptors);
+		Mat img_small;
+		PrepImgForHog(im_g, img_small);
+		hogDescriptor->compute(img_small, descriptors);
+		//Mat disp = VisualizeHoG(img_small,descriptors);
+		//imshow("Hog", disp);
+		//cvWaitKey();
 		Mat hogs = Mat(descriptors);
+		transpose(hogs, hogs);
 		// Mats to hold the positive and negative training data for current category
 		Mat pos, neg;
 		for(int cat_index = 0; cat_index < categories; cat_index++) {
@@ -211,13 +226,14 @@ void categorizer::make_pos_neg() {
 			// Add BOW feature as positive sample for current category ...
 			if(check_category.compare(category) == 0) {
 				positive_surf[check_category].push_back(feat);
-				/*positive_hist[check_category].push_back(hist);
-				positive_hog[check_category].push_back(hogs);*/
+				hists[check_category].push_back(hist);
+				//positive_hist[check_category].push_back(hist);
+				positive_hog[check_category].push_back(hogs);
 				//... and negative sample for all other categories
 			} else {
 				negative_surf[check_category].push_back(feat);
-				/*negative_hist[check_category].push_back(hist);
-				negative_hog[check_category].push_back(hogs);*/
+				//negative_hist[check_category].push_back(hist);
+				negative_hog[check_category].push_back(hogs);
 			}
 		}
 	}
@@ -244,6 +260,7 @@ void categorizer::build_vocab() {
 		templ = i->second;
 		featureDetector->detect(templ, kp);
 		descriptorExtractor->compute(templ, kp, desc);
+		//desc.convertTo(desc,CV_32F);
 		vocab_descriptors.push_back(desc);
 		//templ.release();
 		//desc.release();
@@ -256,6 +273,7 @@ void categorizer::build_vocab() {
 	// cluster the SURF descriptors
 	cout << "Clustering..." << endl;
 	vocab = bowtrainer->cluster();
+	//vocab.convertTo(vocab,CV_8UC1);
 	cout << "Done." << endl;
 
 	// Save the vocabulary
@@ -280,10 +298,13 @@ void categorizer::load_vocab() {
 		string category = category_names[i];
 		string svm_filename = string(vocab_folder) + category + string("SVM.xml");
 		svms_surf[category].load(svm_filename.c_str());
-		/*svm_filename = string(vocab_folder) + category + string("SVM2.xml");
-		svms_hist[category].load(svm_filename.c_str());
-		svm_filename = string(vocab_folder) + category + string("SVM3.xml");
-		svms_hog[category].load(svm_filename.c_str());*/
+		svm_filename = string(vocab_folder) + category + string("HIST.xml");
+		FileStorage fs(svm_filename, FileStorage::READ);
+		fs["hist"] >> trained_hists[category];
+		fs.release();
+		//svms_hist[category].load(svm_filename.c_str());
+		svm_filename = string(vocab_folder) + category + string("HOG.xml");
+		svms_hog[category].load(svm_filename.c_str());
 	}
 }
 
@@ -304,50 +325,46 @@ void categorizer::train_classifiers() {
 		Mat m = Mat::zeros(negative_surf[category].rows, 1, CV_32S);
 		train_labels_surf.push_back(m);
 
-		//Mat train_data_hist = positive_hist[category], train_labels_hist = Mat::ones(train_data_hist.rows, 1, CV_32S);
-		//// Negative training data has labels 0
-		//train_data_hist.push_back(negative_hist[category]);
-		//m = Mat::zeros(negative_hist[category].rows, 1, CV_32S);
-		//train_labels_hist.push_back(m);
+		Mat total_hist = hists[category][0];
+		for(int j = 1; j < hists[category].size(); j++) {
+			total_hist += hists[category][j];
+		}
+		normalize( total_hist, total_hist, 0, 1, NORM_MINMAX, -1, Mat() );
+		trained_hists[category] = total_hist;
+		DisplayHistogram(total_hist,histInfo,category);
 
-		//Mat train_data_hog = positive_hog[category], train_labels_hog = Mat::ones(train_data_hog.rows, 1, CV_32S);
-		//// Negative training data has labels 0
-		//train_data_hog.push_back(negative_hog[category]);
-		//m = Mat::zeros(negative_hog[category].rows, 1, CV_32S);
-		//train_labels_hog.push_back(m);
+		Mat train_data_hog = positive_hog[category], train_labels_hog = Mat::ones(train_data_hog.rows, 1, CV_32S);
+		// Negative training data has labels 0
+		train_data_hog.push_back(negative_hog[category]);
+		m = Mat::ones(negative_hog[category].rows, 1, CV_32S) * -1;
+		train_labels_hog.push_back(m);
+		cout << "Rows: " << train_data_hog.rows << ", Cols: " << train_data_hog.cols << endl;
 
 		// Train SVM!
-		SVMParams params;
-		params.svm_type = SVM::C_SVC;
-		params.kernel_type = SVM::LINEAR;
-		params.term_crit = cv::TermCriteria(CV_TERMCRIT_ITER, 100, 1e-6);
-
-		svms_surf[category].train(train_data_surf, train_labels_surf);//, Mat(), Mat(), params);
-		/*svms_hist[category].train(train_data_hist, train_labels_hist);
-		svms_hog[category].train(train_data_hog, train_labels_hog);*/
-		
+		svms_surf[category].train(train_data_surf, train_labels_surf);
+		//svms_hist[category].train(train_data_hist, train_labels_hist);
+		svms_hog[category].train(train_data_hog, train_labels_hog);
 
 		// Save SVM to file for possible reuse
 		string svm_filename = string(vocab_folder) + category + string("SVM.xml");
 		svms_surf[category].save(svm_filename.c_str());
-		/*svm_filename = string(vocab_folder) + category + string("SVM2.xml");
-		svms_hist[category].save(svm_filename.c_str());
-		svm_filename = string(vocab_folder) + category + string("SVM3.xml");
-		svms_hog[category].save(svm_filename.c_str());*/
-
-		Mat test = downproject(svms_surf[category], train_data_surf, train_labels_surf, true);
-		cv::imshow("SVM", test);
-		cv::waitKey();
-
-		cout << "Trained and saved SVM for category '" << category << "':"<< endl;
-		cout << "# Support Vectors: " << svms_surf[category].get_support_vector_count() << endl;
+		//svm_filename = string(vocab_folder) + category + string("SVM2.xml");
+		//svms_hist[category].save(svm_filename.c_str());
+		svm_filename = string(vocab_folder) + category + string("HOG.xml");
+		svms_hog[category].save(svm_filename.c_str());
+		svm_filename = string(vocab_folder) + category + string("HIST.xml");
+		FileStorage fs(svm_filename, FileStorage::WRITE);
+		fs << "hist" << total_hist;
+		fs.release();
+		cout << "Trained and saved SVM for category " << category << endl;
 	}
+	//cvWaitKey();
 	positive_surf.clear();
 	negative_surf.clear();
-	/*positive_hist.clear();
+	positive_hist.clear();
 	negative_hist.clear();
 	positive_hog.clear();
-	negative_hog.clear();*/
+	negative_hog.clear();
 }
 
 void categorizer::categorize(VideoCapture cap) {
@@ -402,7 +419,7 @@ void categorizer::categorize() {
 		resize(frame, frame_small, Size(), 0.5f, 0.5f);
 		//pyrDown(frame, frame_small, Size(frame.cols / 2, frame.rows / 2));
 		cvtColor(frame_small, frame_g, CV_BGR2GRAY);
-		/*cvtColor(frame_small, frame_hsv, CV_BGR2HSV);*/
+		cvtColor(frame_small, frame_hsv, CV_BGR2HSV);
 		imshow("Image", frame_small);
 		// Extract frame BOW descriptor
 		vector<KeyPoint> kp;
@@ -410,36 +427,53 @@ void categorizer::categorize() {
 		featureDetector->detect(frame_g, kp);
 		bowDescriptorExtractor->compute(frame_g, kp, test_surf);
 
-		/*ComputeHistogram(frame_hsv,histInfo,&test_hist);
+		ComputeHistogram(frame_hsv,histInfo,&test_hist);
+		DisplayHistogram(test_hist,histInfo,"current");
 
-		vector<float> test_hog;
-		hogDescriptor->compute(frame_g, test_hog);*/
+		vector<float> descriptors;
+		Mat frameg_small;
+		PrepImgForHog(frame, frameg_small);
+		hogDescriptor->compute(frameg_small, descriptors);
+		Mat test_hog = Mat(descriptors);
+		transpose(test_hog,test_hog);
+		cout << "Rows: " << test_hog.rows << ", Cols: " << test_hog.cols << endl;
+
 		// Predict using SVMs for all catgories, choose the prediction with the most negative signed distance measure
-		float best_score = 777, best_score2 = 777, best_score3 = 777;
-		string predicted_category;
+		float best_score = 777, best_score2 = -1, best_score3 = -1;
+		string predicted_category, predicted_category2, predicted_category3;
 		for(int i = 0; i < categories; i++) {
 			string category = category_names[i];
 			float prediction = svms_surf[category].predict(test_surf, true);
-			/*float prediction2 = svms_hist[category].predict(test_hist, true);
-			float prediction3 = svms_hog[category].predict(Mat(test_hog), true);*/
-			cout << category << " " << prediction << " ";
-			if(prediction < best_score && prediction < THRESH) {
+			float prediction2 = fabs(compareHist(test_hist, trained_hists[category], CV_COMP_CORREL));
+			/*float prediction3 = compareHist(test_hist, trained_hists[category], CV_COMP_INTERSECT);*/
+			//float prediction3 = svms_hog[category].predict(test_hog, true);
+			cout << category << " " << prediction << " " << prediction2 << " ";
+			if(prediction < best_score) {
 				best_score = prediction;
 				predicted_category = category;
 			}
+			if(prediction2 > best_score2) {
+				best_score2 = prediction2;
+				predicted_category2 = category;
+			}
+			/*if(prediction3 > best_score3) {
+				best_score3 = prediction3;
+				predicted_category3 = category;
+			}*/
 		}
 		cout << endl;
 
 		// Pull up the object template for the detected category and show it in a separate window
-		if(predicted_category.empty()) {
-			cout << "Couldn't find a match!\n" << endl;
-			imshow("Detected object", NULL);
-		} else {
+		if(!predicted_category.empty() && predicted_category == predicted_category2) {
 			imshow("Detected object", objects[predicted_category]);
 			imwrite(std::to_string(count) + "_input.jpg", frame);
 			imwrite(std::to_string(count) + "_output.jpg", objects[predicted_category]);
 			count++;
+		} else {
+			cout << "Couldn't find a match!\n" << endl;
+			imshow("Detected object", NULL);
 		}
+		cout << "SIFT Result: " << predicted_category << "\tHist Result: " << predicted_category2 << "\tHist2 Result: " << predicted_category3 << endl;
 		waitKey();
 		std::cerr << "Finished object." << std::endl;
 	}

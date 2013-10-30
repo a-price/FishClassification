@@ -41,6 +41,9 @@
     <ClCompile Include="FishClassification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DisplayHoG.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="SVMVisualization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

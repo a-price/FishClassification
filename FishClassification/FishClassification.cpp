@@ -108,6 +108,7 @@ categorizer::categorizer(string direc, int _clusters) {
 	hogDescriptor = (new HOGDescriptor());
 	bowtrainer = (new BOWKMeansTrainer(clusters));
 	descriptorMatcher = (new FlannBasedMatcher());
+	//descriptorMatcher = (new BFMatcher());
 	bowDescriptorExtractor = (new BOWImgDescriptorExtractor(descriptorExtractor, descriptorMatcher));
 
 
@@ -183,6 +184,12 @@ void categorizer::make_pos_neg() {
 		vector<KeyPoint> kp;
 		featureDetector->detect(im_g, kp);
 		bowDescriptorExtractor->compute(im_g, kp, feat);
+
+		/*Mat edges;
+		Canny(im_g,edges,50.0f,150.0f);
+		imshow("edges", edges);
+		cvWaitKey();*/
+
 		//compute histogram
 		cout << category << endl;
 		ComputeHistogram(im_hsv,histInfo,&hist);
@@ -233,6 +240,7 @@ void categorizer::build_vocab() {
 		templ = i->second;
 		featureDetector->detect(templ, kp);
 		descriptorExtractor->compute(templ, kp, desc);
+		//desc.convertTo(desc,CV_32F);
 		vocab_descriptors.push_back(desc);
 		//templ.release();
 		//desc.release();
@@ -242,6 +250,7 @@ void categorizer::build_vocab() {
 	bowtrainer->add(vocab_descriptors);
 	// cluster the SURF descriptors
 	vocab = bowtrainer->cluster();
+	//vocab.convertTo(vocab,CV_8UC1);
 
 	// Save the vocabulary
 	FileStorage fs(vocab_folder + "vocab.xml", FileStorage::WRITE);
@@ -403,12 +412,13 @@ void categorizer::categorize() {
 		cout << "Rows: " << test_hog.rows << ", Cols: " << test_hog.cols << endl;
 
 		// Predict using SVMs for all catgories, choose the prediction with the most negative signed distance measure
-		float best_score = 777, best_score2 = -1, best_score3 = 777;
+		float best_score = 777, best_score2 = -1, best_score3 = -1;
 		string predicted_category, predicted_category2, predicted_category3;
 		for(int i = 0; i < categories; i++) {
 			string category = category_names[i];
 			float prediction = svms_surf[category].predict(test_surf, true);
-			float prediction2 = compareHist(test_hist, trained_hists[category], CV_COMP_CORREL);
+			float prediction2 = fabs(compareHist(test_hist, trained_hists[category], CV_COMP_CORREL));
+			/*float prediction3 = compareHist(test_hist, trained_hists[category], CV_COMP_INTERSECT);*/
 			//float prediction3 = svms_hog[category].predict(test_hog, true);
 			cout << category << " " << prediction << " " << prediction2 << " ";
 			if(prediction < best_score) {
@@ -419,6 +429,10 @@ void categorizer::categorize() {
 				best_score2 = prediction2;
 				predicted_category2 = category;
 			}
+			/*if(prediction3 > best_score3) {
+				best_score3 = prediction3;
+				predicted_category3 = category;
+			}*/
 		}
 		cout << endl;
 
@@ -429,7 +443,7 @@ void categorizer::categorize() {
 			cout << "Couldn't find a match!\n" << endl;
 			imshow("Detected object", NULL);
 		}
-		cout << "SIFT Result: " << predicted_category << "\tHist Result: " << predicted_category2 << "\tHog Result: " << predicted_category3 << endl;
+		cout << "SIFT Result: " << predicted_category << "\tHist Result: " << predicted_category2 << "\tHist2 Result: " << predicted_category3 << endl;
 		waitKey();
 	}
 }

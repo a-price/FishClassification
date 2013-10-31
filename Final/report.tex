@@ -93,6 +93,15 @@ We expect the concatenated features to outperform in situations where marine lif
 \label{fig:colorHists}
 \end{figure*}
 
+
+
+\section{Discussion}
+	In our experiments, the performance of the classifier was highly dependent on the number and quality of training images. While this may seem obvious on first inspection, the classifier was sensitive to the point of near instability to certain images in the training set. This is likely due to the relatively small size of our training set ($<$ 100 images), and to the fact that only 2 sets of features were used.
+	
+	A second improvement would be the application of a more rigorous voting scheme. In its current state, both experts are considered equally valid over all query images. However, our experiments revealed that certain features were more discriminative than others under certain viewing conditions. (For instance, animals in the same tank tend to have similar color histograms.) This could be resolved by using voting weights derived from both the historical accuracy of a classifier for a particular class and from the confidence value for a given query image.
+	
+	A final opportunity for future work would be the incorporation of a region of interest (ROI) over the input images. For the most part, the subject of interest tends to fall within the middle third of both training and query images, so these regions could be given higher weights. This would likely help differentiate images in which multiple species are present, but may reduce the benefit of context clues such as background scenery.
+
 \begin{figure*}[ht]
 \begin{center}
 	\includegraphics[width=0.21\linewidth]{1_input.jpg}
@@ -111,14 +120,13 @@ We expect the concatenated features to outperform in situations where marine lif
 	~
 	~
 	~
+	~
 	\includegraphics[width=0.21\linewidth]{3_output.jpg}
 	\includegraphics[width=0.21\linewidth]{4_output.jpg}
 \end{center}
 \caption{\small A sample of correctly matched images with an unsuccessfully matched image.}
 \label{fig:matchResults}
 \end{figure*}
-
-\section{Discussion}
 
 
 %-------------------------------------------------------------------------

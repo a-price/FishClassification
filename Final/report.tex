@@ -79,13 +79,7 @@
   Of all of these feature vectors and classifiers, the SURF features and color histograms provided the best matching performance, and, more importantly, failed to agree on false positive matches. 
   
   In order to train this system, we provided three sets of images: template images to give the bag of words a suitable vocabulary, labeled training images, and unlabeled testing images. In a number of test sets, all of these images were captured with a single camera during a visit to the Aquarium. In other test runs, these images were augmented with representative images drawn from the Internet.
-
-\section{Evaluation}
-We plan to evaluate the classifier performance by generating a confusion matrix based on images drawn from a large subset of the species living at the Atlanta Aquarium. 
-Additionally, we will compare the performance of the aggregated features against classifiers based on the individual features.
-Finally, we will be comparing against \cite{berg2006animals} to determine the degree of dependency on text information.
-We expect the concatenated features to outperform in situations where marine life shares a similar environment, and therefore shares similar color or shape characteristics.
-
+  
 \begin{figure*}[ht]
 \begin{center}
 	\begin{subfigure}[b]{0.24\linewidth}
@@ -109,6 +103,76 @@ We expect the concatenated features to outperform in situations where marine lif
 \caption{\small A sample of 2D color histograms with a query image.}
 \label{fig:colorHists}
 \end{figure*}
+
+\section{Evaluation}
+We evaluate the classifier performance by generating confusion matrices based on images drawn from a subset of the species living at the Atlanta Aquarium. Table \ref{table:confmatA} shows the matrices for the individual classifiers. These classifiers have no minimum confidence threshold, so they always return the ...
+
+\begin{table}
+\begin{center}
+\noindent\begin{tabular}{c*{7}{|E}|}
+ \multicolumn{8}{c}{SURF SVM}  \\ \hhline{~*6{|-}|}
+ \multicolumn{1}{c}{} & 
+ \multicolumn{1}{c}{J} & 
+ \multicolumn{1}{c}{O} &
+ \multicolumn{1}{c}{P} & 
+ \multicolumn{1}{c}{G} & 
+ \multicolumn{1}{c}{S} &
+ \multicolumn{1}{c}{L} & 
+ \multicolumn{1}{c}{N} \\ \hhline{~*6{|-}|}
+ J & .857 & 0 & 0 & .143 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
+ O & 0 & .895 & .053 & 0 & 0 & .053 & 0 \\ \hhline{~*6{|-}|} 
+ P & 0 & .300 & .700 & 0 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
+ G & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
+ S & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\ \hhline{~*6{|-}|}
+ L & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\ \hhline{~*6{|-}|}
+ N & 0 & 0 & .25 & .25 & .25 & .25 & 0 \\ \hhline{~*6{|-}|}
+ \\
+ \multicolumn{8}{c}{Color Histograms}  \\ \hhline{~*6{|-}|}
+ \multicolumn{1}{c}{} & 
+ \multicolumn{1}{c}{J} & 
+ \multicolumn{1}{c}{O} &
+ \multicolumn{1}{c}{P} & 
+ \multicolumn{1}{c}{G} & 
+ \multicolumn{1}{c}{S} &
+ \multicolumn{1}{c}{L} & 
+ \multicolumn{1}{c}{N} \\ \hhline{~*6{|-}|}
+ J & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
+ O & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\ \hhline{~*6{|-}|} 
+ P & 0 & .0 & .6 & 0 & 0 & .4 & 0 \\ \hhline{~*6{|-}|}
+ G & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
+ S & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\ \hhline{~*6{|-}|}
+ L & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\ \hhline{~*6{|-}|}
+ N & .25 & 0 & .25 & .25 & .25 & 0 & 0 \\ \hhline{~*6{|-}|}
+\end{tabular}\par\bigskip
+\caption{\small Confusion matrices for individual classifiers.}
+\label{table:confmatA}
+\end{center}
+\end{table}
+
+\begin{table}
+\begin{center}
+\noindent\begin{tabular}{c*{7}{|E}|}
+ \multicolumn{8}{c}{Ensemble Classifier}  \\ \hhline{~*6{|-}|}
+ \multicolumn{1}{c}{} & 
+ \multicolumn{1}{c}{J} & 
+ \multicolumn{1}{c}{O} &
+ \multicolumn{1}{c}{P} & 
+ \multicolumn{1}{c}{G} & 
+ \multicolumn{1}{c}{S} &
+ \multicolumn{1}{c}{L} & 
+ \multicolumn{1}{c}{N} \\ \hhline{~*6{|-}|}
+ J & .857 & 0 & 0 & 0 & 0 & 0 & 0.143 \\ \hhline{~*6{|-}|}
+ O & 0 & .895 & 0 & 0 & 0 & 0 & 0.105 \\ \hhline{~*6{|-}|} 
+ P & 0 & 0 & .6 & 0 & 0 & 0 & 0.4 \\ \hhline{~*6{|-}|}
+ G & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
+ S & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\ \hhline{~*6{|-}|}
+ L & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\ \hhline{~*6{|-}|}
+ N & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\ \hhline{~*6{|-}|}
+\end{tabular}\par\bigskip
+\caption{\small Confusion matrix for ensemble classifier. Note that while the number of false negatives is relatively high, no false positive results are returned.}
+\label{table:confmatB}
+\end{center}
+\end{table}
 
 
 
@@ -144,59 +208,6 @@ We expect the concatenated features to outperform in situations where marine lif
 \caption{\small A sample of correctly matched images with an unsuccessfully matched image.}
 \label{fig:matchResults}
 \end{figure*}
-
-\noindent\begin{tabular}{c*{7}{|E}|}
- \multicolumn{8}{c}{SURF SVM}  \\ \hhline{~*6{|-}|}
- \multicolumn{1}{c}{} & 
- \multicolumn{1}{c}{J} & 
- \multicolumn{1}{c}{O} &
- \multicolumn{1}{c}{P} & 
- \multicolumn{1}{c}{G} & 
- \multicolumn{1}{c}{S} &
- \multicolumn{1}{c}{L} & 
- \multicolumn{1}{c}{N} \\ \hhline{~*6{|-}|}
- J & .857 & 0 & 0 & .143 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
- O & 0 & .895 & .053 & 0 & 0 & .053 & 0 \\ \hhline{~*6{|-}|} 
- P & 0 & .300 & .700 & 0 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
- G & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
- S & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\ \hhline{~*6{|-}|}
- L & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\ \hhline{~*6{|-}|}
- N & 0 & 0 & .25 & .25 & .25 & .25 & 0 \\ \hhline{~*6{|-}|}
- \\
- \multicolumn{8}{c}{Color Histograms}  \\ \hhline{~*6{|-}|}
- \multicolumn{1}{c}{} & 
- \multicolumn{1}{c}{J} & 
- \multicolumn{1}{c}{O} &
- \multicolumn{1}{c}{P} & 
- \multicolumn{1}{c}{G} & 
- \multicolumn{1}{c}{S} &
- \multicolumn{1}{c}{L} & 
- \multicolumn{1}{c}{N} \\ \hhline{~*6{|-}|}
- J & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
- O & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\ \hhline{~*6{|-}|} 
- P & 0 & .0 & .6 & 0 & 0 & .4 & 0 \\ \hhline{~*6{|-}|}
- G & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
- S & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\ \hhline{~*6{|-}|}
- L & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\ \hhline{~*6{|-}|}
- N & .25 & 0 & .25 & .25 & .25 & 0 & 0 \\ \hhline{~*6{|-}|}
- \\
- \multicolumn{8}{c}{Ensemble Classifier}  \\ \hhline{~*6{|-}|}
- \multicolumn{1}{c}{} & 
- \multicolumn{1}{c}{J} & 
- \multicolumn{1}{c}{O} &
- \multicolumn{1}{c}{P} & 
- \multicolumn{1}{c}{G} & 
- \multicolumn{1}{c}{S} &
- \multicolumn{1}{c}{L} & 
- \multicolumn{1}{c}{N} \\ \hhline{~*6{|-}|}
- J & .857 & 0 & 0 & 0 & 0 & 0 & 0.143 \\ \hhline{~*6{|-}|}
- O & 0 & .895 & 0 & 0 & 0 & 0 & 0.105 \\ \hhline{~*6{|-}|} 
- P & 0 & 0 & .6 & 0 & 0 & 0 & 0.4 \\ \hhline{~*6{|-}|}
- G & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
- S & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\ \hhline{~*6{|-}|}
- L & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\ \hhline{~*6{|-}|}
- N & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\ \hhline{~*6{|-}|}
-\end{tabular}\par\bigskip
 
 
 %-------------------------------------------------------------------------

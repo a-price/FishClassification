@@ -1,5 +1,6 @@
 \documentclass[10pt,twocolumn,letterpaper]{article}
 
+\usepackage[table]{xcolor}
 \usepackage{cvpr}
 \usepackage{times}
 \usepackage{epsfig}
@@ -8,6 +9,21 @@
 \usepackage{subcaption}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{collcell}
+\usepackage{hhline}
+\usepackage{pgf}
+
+
+\newcommand\gray{gray}
+
+\newcommand\ColCell[1]{%
+  \pgfmathparse{#1<.8?1:0}%
+    \ifnum\pgfmathresult=0\relax\color{white}\fi
+  \pgfmathparse{1-#1}%
+  \expandafter\cellcolor\expandafter[%
+    \expandafter\gray\expandafter]\expandafter{\pgfmathresult}#1}
+
+\newcolumntype{E}{>{\collectcell\ColCell}c<{\endcollectcell}}
 
 % Include other packages here, before hyperref.
 
@@ -24,6 +40,7 @@
 % Pages are numbered in submission mode, and unnumbered in camera-ready
 %\ifcvprfinal\pagestyle{empty}\fi
 \setcounter{page}{1}
+
 \begin{document}
 
 %%%%%%%%% TITLE
@@ -127,6 +144,59 @@ We expect the concatenated features to outperform in situations where marine lif
 \caption{\small A sample of correctly matched images with an unsuccessfully matched image.}
 \label{fig:matchResults}
 \end{figure*}
+
+\noindent\begin{tabular}{c*{7}{|E}|}
+ \multicolumn{8}{c}{SURF SVM}  \\ \hhline{~*6{|-}|}
+ \multicolumn{1}{c}{} & 
+ \multicolumn{1}{c}{J} & 
+ \multicolumn{1}{c}{O} &
+ \multicolumn{1}{c}{P} & 
+ \multicolumn{1}{c}{G} & 
+ \multicolumn{1}{c}{S} &
+ \multicolumn{1}{c}{L} & 
+ \multicolumn{1}{c}{N} \\ \hhline{~*6{|-}|}
+ J & .857 & 0 & 0 & .143 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
+ O & 0 & .895 & .053 & 0 & 0 & .053 & 0 \\ \hhline{~*6{|-}|} 
+ P & 0 & .300 & .700 & 0 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
+ G & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
+ S & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\ \hhline{~*6{|-}|}
+ L & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\ \hhline{~*6{|-}|}
+ N & 0 & 0 & .25 & .25 & .25 & .25 & 0 \\ \hhline{~*6{|-}|}
+ \\
+ \multicolumn{8}{c}{Color Histograms}  \\ \hhline{~*6{|-}|}
+ \multicolumn{1}{c}{} & 
+ \multicolumn{1}{c}{J} & 
+ \multicolumn{1}{c}{O} &
+ \multicolumn{1}{c}{P} & 
+ \multicolumn{1}{c}{G} & 
+ \multicolumn{1}{c}{S} &
+ \multicolumn{1}{c}{L} & 
+ \multicolumn{1}{c}{N} \\ \hhline{~*6{|-}|}
+ J & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
+ O & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\ \hhline{~*6{|-}|} 
+ P & 0 & .0 & .6 & 0 & 0 & .4 & 0 \\ \hhline{~*6{|-}|}
+ G & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
+ S & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\ \hhline{~*6{|-}|}
+ L & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\ \hhline{~*6{|-}|}
+ N & .25 & 0 & .25 & .25 & .25 & 0 & 0 \\ \hhline{~*6{|-}|}
+ \\
+ \multicolumn{8}{c}{Ensemble Classifier}  \\ \hhline{~*6{|-}|}
+ \multicolumn{1}{c}{} & 
+ \multicolumn{1}{c}{J} & 
+ \multicolumn{1}{c}{O} &
+ \multicolumn{1}{c}{P} & 
+ \multicolumn{1}{c}{G} & 
+ \multicolumn{1}{c}{S} &
+ \multicolumn{1}{c}{L} & 
+ \multicolumn{1}{c}{N} \\ \hhline{~*6{|-}|}
+ J & .857 & 0 & 0 & 0 & 0 & 0 & 0.143 \\ \hhline{~*6{|-}|}
+ O & 0 & .895 & 0 & 0 & 0 & 0 & 0.105 \\ \hhline{~*6{|-}|} 
+ P & 0 & 0 & .6 & 0 & 0 & 0 & 0.4 \\ \hhline{~*6{|-}|}
+ G & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\ \hhline{~*6{|-}|}
+ S & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\ \hhline{~*6{|-}|}
+ L & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\ \hhline{~*6{|-}|}
+ N & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\ \hhline{~*6{|-}|}
+\end{tabular}\par\bigskip
 
 
 %-------------------------------------------------------------------------

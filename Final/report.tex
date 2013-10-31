@@ -4,6 +4,8 @@
 \usepackage{times}
 \usepackage{epsfig}
 \usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
 \usepackage{amsmath}
 \usepackage{amssymb}
 
@@ -69,20 +71,55 @@ We expect the concatenated features to outperform in situations where marine lif
 
 \begin{figure*}[ht]
 \begin{center}
+	\begin{subfigure}[b]{0.24\linewidth}
+		\includegraphics[width=\textwidth]{Angelfish_hist.jpg}
+		\caption{Fusiliers}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.24\linewidth}
+		\includegraphics[width=\textwidth]{Jellyfish_hist.jpg}
+		\caption{Jellyfish}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.24\linewidth}
+		\includegraphics[width=\textwidth]{PointyFish_hist.jpg}
+		\caption{Lionfish}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.24\linewidth}
+		\includegraphics[width=\textwidth]{current_hist.jpg}
+		\caption{Query Image}
+	\end{subfigure}
+
+\end{center}
+\caption{\small A sample of 2D color histograms with a query image.}
+\label{fig:colorHists}
+\end{figure*}
+
+\begin{figure*}[ht]
+\begin{center}
 	\includegraphics[width=0.21\linewidth]{1_input.jpg}
 	\includegraphics[width=0.21\linewidth]{2_input.jpg}
 	\includegraphics[width=0.21\linewidth]{3_input.jpg}
 	\includegraphics[width=0.21\linewidth]{4_input.jpg}
 	\includegraphics[width=0.21\linewidth]{1_output.jpg}
+	~
+	~
+	~
+	~
+	~
 	\includegraphics[width=0.10\linewidth]{2_output.jpg}
+	~
+	~
+	~
+	~
+	~
 	\includegraphics[width=0.21\linewidth]{3_output.jpg}
 	\includegraphics[width=0.21\linewidth]{4_output.jpg}
 \end{center}
-\caption{\small A sequence showing the dependency graph of the pile after the removal of 1, 2, 4, and 8 elements.}
-\label{fig:graphSeq}
+\caption{\small A sample of correctly matched images with an unsuccessfully matched image.}
+\label{fig:matchResults}
 \end{figure*}
 
 \section{Discussion}
+
 
 %-------------------------------------------------------------------------
 

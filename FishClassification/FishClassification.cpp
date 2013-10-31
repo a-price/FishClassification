@@ -93,9 +93,10 @@ inline void DisplayHistogram(Mat &hist, HistInfo &histInfo, string window) {
 				Scalar::all(intensity),
 				CV_FILLED );
 		}
-		namedWindow( window, 1 );
-		imshow( window, histImg );
-		//cvWaitKey();
+	namedWindow( window, 1 );
+	imshow( window, histImg );
+	cv::imwrite(window+"_hist.jpg", histImg);
+	//cvWaitKey();
 }
 
 inline void ComputeHistogram(Mat &img, HistInfo &histInfo, Mat *hist) {

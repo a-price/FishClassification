@@ -105,7 +105,7 @@
 \end{figure*}
 
 \section{Evaluation}
-We evaluate the classifier performance by generating confusion matrices based on images drawn from a subset of the species living at the Atlanta Aquarium. Table \ref{table:confmatA} shows the matrices for the individual classifiers. These classifiers have no minimum confidence threshold, so they always return the ...
+We evaluate the classifier performance by generating confusion matrices based on images drawn from a subset of the species living at the Atlanta Aquarium. Table \ref{table:confmatA} shows the matrices for the individual classifiers. These classifiers have no minimum confidence threshold, so they always return the most probable class, leading to a higher number of false positives. We account for this in Table \ref{table:confmatB}, where we only accept results agreed on by both classifiers. This means that our maximum true positive accuracy is limited by the maximum accuracy of the individual classifiers, but the incidence of false positives is reduced. Since one intended application of this algorithm is classification of video snippets, this performance trade-off is more than acceptable.
 
 \begin{table}
 \begin{center}

@@ -81,7 +81,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 inline void DisplayHistogram(Mat &hist, HistInfo &histInfo, string window) {
 	//for displaying the histogram
 	double maxVal=0;
-    minMaxLoc(hist, 0, &maxVal, 0, 0);
+	minMaxLoc(hist, 0, &maxVal, 0, 0);
 	Mat histImg = Mat::zeros( histInfo.s_bins*10,  histInfo.h_bins*10, CV_8UC3);
 	for( int h = 0; h < histInfo.h_bins; h++ )
 		for( int s = 0; s < histInfo.s_bins; s++ )
@@ -356,6 +356,10 @@ void categorizer::train_classifiers() {
 		FileStorage fs(svm_filename, FileStorage::WRITE);
 		fs << "hist" << total_hist;
 		fs.release();
+		cv::Mat svmMat = downproject(svms_surf[category], train_data_surf, train_labels_surf);
+		cv::imshow("SVM", svmMat);
+		cv::imwrite("SVM.jpg", svmMat);
+		cv::waitKey();
 		cout << "Trained and saved SVM for category " << category << endl;
 	}
 	//cvWaitKey();
